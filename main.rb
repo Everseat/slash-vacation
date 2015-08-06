@@ -25,11 +25,19 @@ post "/" do
 
   if tree.list?
     # output the list of vacations
-    "list"
+    OooEntry.where { start_date >= Date.today }.order(:start_date).map do |entry|
+      entry.to_s
+    end.join "\n"
   else
     # save a new record
     details = tree.details
-    "#{tree.type.text_value}: #{details.date_range.inspect} (#{details.note})"
+    OooEntry.create slack_id: params[:user_id],
+                    slack_name: params[:user_name],
+                    type: tree.type.text_value,
+                    start_date: details.date_range.first,
+                    end_date: details.date_range.last,
+                    note: details.note
+    [201, ":thumbsup:"]
   end
 end
 

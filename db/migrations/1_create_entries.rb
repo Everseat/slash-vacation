@@ -4,6 +4,7 @@ Sequel.migration do
       primary_key :id
       String :slack_id, size: 255
       String :slack_name, size: 255
+      String :type, size: 50
       Date :start_date
       Date :end_date
       String :note, text: true
