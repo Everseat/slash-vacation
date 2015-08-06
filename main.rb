@@ -25,9 +25,14 @@ post "/" do
 
   if tree.list?
     # output the list of vacations
-    OooEntry.where { start_date >= Date.today }.order(:start_date).map do |entry|
-      entry.to_s
-    end.join "\n"
+    data_set = OooEntry.where { start_date >= Date.today }
+    if data_set.count == 0
+      "Everyone's around :metal:"
+    else
+      data_set.order(:start_date).map do |entry|
+        entry.to_s
+      end.join "\n"
+    end
   else
     # save a new record
     details = tree.details

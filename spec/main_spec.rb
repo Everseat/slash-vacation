@@ -30,6 +30,12 @@ RSpec.describe "slash-vacation" do
         expect(last_response.body).to eq "Expected one of 'wfh', 'out', 'list' at line 1, column 1 (byte 1)"
       end
 
+      it "gives a message when everyone is present" do
+        OooEntry.where.delete
+        post "/", token: token, text: "list"
+        expect(last_response.body).to eq "Everyone's around :metal:"
+      end
+
       it "should join OooEntries with new lines" do
         OooEntry.where.delete
         today = Date.new 2015, 8, 6
