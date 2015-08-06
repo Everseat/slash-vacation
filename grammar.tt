@@ -1,16 +1,29 @@
 grammar Schedule
   rule commands
-    (out_of_office / list) {
-      def list?; terminal?; end
+    (out_of_office / delete_rule / list) {
+      def list?; !!(defined?(super) && super); end
+      def delete?; !!(defined?(super) && super); end
     }
   end
 
   rule list
-    'list'
+    'list' {
+      def list?; true; end
+    }
+  end
+
+  rule delete_rule
+    'rm' ' ' out_of_office {
+      def delete?; true; end
+      def type; out_of_office.type; end
+      def details; out_of_office.details; end
+    }
   end
 
   rule out_of_office
-    type:('wfh' / 'out') ' ' details
+    type:('wfh' / 'out') ' ' details {
+      def type; super.text_value; end
+    }
   end
 
   rule details

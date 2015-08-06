@@ -27,7 +27,7 @@ RSpec.describe "slash-vacation" do
       it "should give an error message when parsing fails" do
         post "/", token: token, text: 'fail'
         expect(last_response.status).to eq 500
-        expect(last_response.body).to eq "Expected one of 'wfh', 'out', 'list' at line 1, column 1 (byte 1)"
+        expect(last_response.body).to eq "Expected one of 'wfh', 'out', 'rm', 'list' at line 1, column 1 (byte 1)"
       end
 
       it "gives a message when everyone is present" do
@@ -58,6 +58,25 @@ RSpec.describe "slash-vacation" do
       it "should respond with an emoji" do
         post "/", token: token, text: 'wfh 8/10 morning only', user_id: 'U1234', user_name: 'rahearn'
         expect(last_response.status).to eq 201
+        expect(last_response.body).to eq ":thumbsup:"
+      end
+    end
+    context "delete" do
+      before(:each) do
+        OooEntry.where.delete
+        today = Date.new 2015, 8, 6
+        OooEntry.create slack_id: 'U1234', slack_name: 'rahearn', type: 'out', start_date: today, end_date: today, note: ''
+        OooEntry.create slack_id: 'U1234', slack_name: 'rahearn', type: 'wfh', start_date: today, end_date: today, note: ''
+        OooEntry.create slack_id: 'U2345', slack_name: 'tash', type: 'out', start_date: today, end_date: today, note: ''
+      end
+      it "should remove only my matching vacation" do
+        expect {
+          post "/", token: token, text: 'rm out 8/6/2015', user_id: 'U1234', user_name: 'rahearn'
+        }.to change(OooEntry, :count).from(3).to 2
+      end
+      it "should respond with a success message" do
+        post "/", token: token, text: 'rm out 8/6/2015', user_id: 'U1234', user_name: 'rahearn'
+        expect(last_response.status).to be 200
         expect(last_response.body).to eq ":thumbsup:"
       end
     end

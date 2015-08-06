@@ -33,12 +33,16 @@ post "/" do
         entry.to_s
       end.join "\n"
     end
+  elsif tree.delete?
+    start_date = tree.details.date_range.first
+    OooEntry.where(start_date: start_date, type: tree.type, slack_id: params[:user_id]).destroy
+    ":thumbsup:"
   else
     # save a new record
     details = tree.details
     OooEntry.create slack_id: params[:user_id],
                     slack_name: params[:user_name],
-                    type: tree.type.text_value,
+                    type: tree.type,
                     start_date: details.date_range.first,
                     end_date: details.date_range.last,
                     note: details.note

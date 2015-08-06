@@ -14,6 +14,18 @@ RSpec.describe Parser do
     end
   end
 
+  context "remove entry" do
+    let(:data) { "rm wfh 8/8" }
+    it "should return a parse tree" do
+      expect { subject.parse }.to_not raise_error
+    end
+    it "should be a delete command" do
+      tree = subject.parse
+      expect(tree.list?).to be false
+      expect(tree.delete?).to be true
+    end
+  end
+
   context "work from home" do
     context "single day" do
       let(:data) { "wfh 8/8" }
@@ -22,6 +34,9 @@ RSpec.describe Parser do
       end
       it "should not be a list command" do
         expect(subject.parse.list?).to be false
+      end
+      it "should not be a delete command" do
+        expect(subject.parse.delete?).to be false
       end
 
       context "#details" do
