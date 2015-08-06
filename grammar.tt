@@ -1,0 +1,36 @@
+grammar Schedule
+  rule commands
+    (out_of_office / list) {
+      def list?; terminal?; end
+    }
+  end
+
+  rule list
+    'list'
+  end
+
+  rule out_of_office
+    type:("wfh" / "out") ' ' details
+  end
+
+  rule details
+    (date_range / date) (' ' note)? <CommandDetails>
+  end
+
+  rule date_range
+    start_date:date ' '? '-' ' '? end_date:date
+  end
+
+  rule date
+    digit 1..2 '/' digit 1..2 ('/' year:digit 4..4)? <DateLiteral>
+  end
+
+  rule note
+    .+
+  end
+
+  rule digit
+    [0-9]
+  end
+
+end

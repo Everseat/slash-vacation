@@ -1,4 +1,4 @@
-require File.expand_path "../spec_helper.rb", __FILE__
+require_relative "spec_helper"
 
 RSpec.describe "slash-vacation" do
   it "should respond to the root GET" do
@@ -7,13 +7,14 @@ RSpec.describe "slash-vacation" do
   end
 
   context "POST '/'" do
+    let(:command) { "list" }
     it "should check the token and reject bad requests" do
-      post "/", token: 'bad'
+      post "/", token: 'bad', text: command
       expect(last_response.status).to eq 401
     end
 
     it "should be successful" do
-      post "/", token: 'test'
+      post "/", token: 'test', text: command
       expect(last_response.status).to eq 200
     end
   end

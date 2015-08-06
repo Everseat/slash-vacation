@@ -1,4 +1,5 @@
 require "sinatra"
+require_relative "parser"
 
 TOKEN = ENV["SV_TOKEN"]
 
@@ -11,7 +12,16 @@ post "/" do
     return [401, ""]
   end
 
-  params.inspect
+  tree = Parser.parse params[:text]
+
+  if tree.list?
+    # output the list of vacations
+    "list"
+  else
+    # save a new record
+    details = tree.details
+    "#{tree.type}: #{details.date_range.inspect} (#{details.note})"
+  end
 end
 
 =begin
