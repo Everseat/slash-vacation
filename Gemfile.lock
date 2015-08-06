@@ -31,10 +31,13 @@ GEM
     net-ssh-gateway (1.2.0)
       net-ssh (>= 2.6.5)
     netrc (0.10.3)
+    pg (0.18.2)
     polyglot (0.3.5)
     rack (1.6.4)
     rack-protection (1.5.3)
       rack
+    rack-test (0.6.3)
+      rack (>= 1.0)
     rest-client (1.8.0)
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 3.0)
@@ -76,6 +79,8 @@ PLATFORMS
 DEPENDENCIES
   foreman
   heroku
+  pg (~> 0.18)
+  rack-test
   rspec (~> 3.3)
   sequel (~> 4.25)
   sinatra (~> 1.4)
