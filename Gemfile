@@ -6,6 +6,7 @@ gem 'sinatra', '~> 1.4'
 gem 'thin'
 
 gem 'treetop', '~> 1.6'
+gem 'sequel', '~> 4.25'
 
 group :development do
   gem 'heroku'

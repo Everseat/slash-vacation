@@ -53,6 +53,7 @@ GEM
       rspec-support (~> 3.3.0)
     rspec-support (3.3.0)
     rubyzip (1.1.7)
+    sequel (4.25.0)
     sinatra (1.4.6)
       rack (~> 1.4)
       rack-protection (~> 1.4)
@@ -76,6 +77,7 @@ DEPENDENCIES
   foreman
   heroku
   rspec (~> 3.3)
+  sequel (~> 4.25)
   sinatra (~> 1.4)
   thin
   treetop (~> 1.6)

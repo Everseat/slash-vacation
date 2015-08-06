@@ -3,6 +3,7 @@ require 'rspec'
 
 ENV['RACK_ENV'] = 'test'
 ENV['SV_TOKEN'] = 'test'
+ENV['DATABASE_URL'] = 'postgresql://localhost/slash-vacation_test'
 
 require File.expand_path '../../main.rb', __FILE__
 

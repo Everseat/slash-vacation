@@ -1,7 +1,11 @@
 require "sinatra"
+require 'sequel'
 require_relative "parser"
 
 TOKEN = ENV["SV_TOKEN"]
+DB = Sequel.connect ENV['DATABASE_URL']
+
+require_relative "models/ooo_entry"
 
 get "/" do
   "Slack slash command vacation tracking"
