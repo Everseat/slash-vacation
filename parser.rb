@@ -36,15 +36,16 @@ Treetop.load(File.join base_path, 'grammar.tt')
 
 class Parser
 
-  @@parser = ScheduleParser.new
+  def initialize(data)
+    @parser = ScheduleParser.new
+    @data = data.strip
+  end
 
-  def self.parse(data)
-    tree = @@parser.parse data.strip
-
+  def parse
+    tree = @parser.parse @data
     if tree.nil?
-      fail ParseError, "Parse error at offset: #{@@parser.index}"
+      fail ParseError, @parser.failure_reason
     end
-
     tree
   end
 

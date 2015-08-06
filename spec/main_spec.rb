@@ -17,5 +17,16 @@ RSpec.describe "slash-vacation" do
       post "/", token: 'test', text: command
       expect(last_response.status).to eq 200
     end
+
+    it "should default to list" do
+      post "/", token: 'test', text: ''
+      expect(last_response.status).to eq 200
+    end
+
+    it "should give an error message when parsing fails" do
+      post "/", token: 'test', text: 'fail'
+      expect(last_response.status).to eq 500
+      expect(last_response.body).to eq "Expected one of 'wfh', 'out', 'list' at line 1, column 1 (byte 1)"
+    end
   end
 end

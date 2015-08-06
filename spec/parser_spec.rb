@@ -2,15 +2,15 @@ require_relative "spec_helper"
 
 RSpec.describe Parser do
 
-  subject { described_class }
+  subject { described_class.new data }
 
   context "list" do
     let(:data) { "list" }
     it "should return a parse tree" do
-      expect { subject.parse data }.to_not raise_error
+      expect { subject.parse }.to_not raise_error
     end
     it "should be a list command" do
-      expect(subject.parse(data).list?).to be true
+      expect(subject.parse.list?).to be true
     end
   end
 
@@ -18,14 +18,14 @@ RSpec.describe Parser do
     context "single day" do
       let(:data) { "wfh 8/8" }
       it "should return a parse tree" do
-        expect { subject.parse data }.to_not raise_error
+        expect { subject.parse }.to_not raise_error
       end
       it "should not be a list command" do
-        expect(subject.parse(data).list?).to be false
+        expect(subject.parse.list?).to be false
       end
 
       context "#details" do
-        subject { described_class.parse(data).details }
+        subject { described_class.new(data).parse.details }
 
         it "should have an empty note" do
           expect(subject.note).to eq ""
@@ -39,11 +39,11 @@ RSpec.describe Parser do
       context "with the year" do
         let(:data) { "wfh 8/8/2020" }
         it "should return a parse tree" do
-          expect { subject.parse data }.to_not raise_error
+          expect { subject.parse }.to_not raise_error
         end
 
         context "#details" do
-          subject { described_class.parse(data).details }
+          subject { described_class.new(data).parse.details }
 
           it "should have a date range with start and end equal" do
             expected = Date.new 2020, 8, 8
@@ -55,11 +55,11 @@ RSpec.describe Parser do
       context "with a note" do
         let(:data) { "wfh 8/8 morning only" }
         it "should return a parse tree" do
-          expect { subject.parse data }.to_not raise_error
+          expect { subject.parse }.to_not raise_error
         end
 
         context "#details" do
-          subject { described_class.parse(data).details }
+          subject { described_class.new(data).parse.details }
 
           it "should have a note" do
             expect(subject.note).to eq "morning only"
@@ -71,11 +71,11 @@ RSpec.describe Parser do
     context "date range" do
       let(:data) { "wfh 8/8-8/10" }
       it "should return a parse tree" do
-        expect { subject.parse data }.to_not raise_error
+        expect { subject.parse }.to_not raise_error
       end
 
       context "#details" do
-        subject { described_class.parse(data).details }
+        subject { described_class.new(data).parse.details }
 
         it "should have a date range in the current year" do
           year = Date.today.year
@@ -92,7 +92,7 @@ RSpec.describe Parser do
   context "vacation" do
     let(:data) { "out 8/8 - 8/9" }
     it "should return a parse tree" do
-      expect { subject.parse data }.to_not raise_error
+      expect { subject.parse }.to_not raise_error
     end
   end
 

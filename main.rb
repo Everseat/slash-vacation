@@ -12,7 +12,12 @@ post "/" do
     return [401, ""]
   end
 
-  tree = Parser.parse params[:text]
+  input = params[:text].blank? ? "list" : params[:text]
+  begin
+    tree = Parser.new(input).parse
+  rescue ParseError => pe
+    return [500, pe.message]
+  end
 
   if tree.list?
     # output the list of vacations
@@ -20,7 +25,7 @@ post "/" do
   else
     # save a new record
     details = tree.details
-    "#{tree.type}: #{details.date_range.inspect} (#{details.note})"
+    "#{tree.type.text_value}: #{details.date_range.inspect} (#{details.note})"
   end
 end
 
