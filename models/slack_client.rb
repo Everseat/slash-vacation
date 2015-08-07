@@ -11,7 +11,11 @@ class SlackClient
 
   def users_in_channel(name)
     channel = find_channel name
-    channel["members"]
+    if channel
+      channel["members"]
+    else
+      []
+    end
   end
 
   def exchange_token(args)
@@ -22,8 +26,11 @@ class SlackClient
   private
 
   def find_channel(name)
-    channels = JSON.parse(connection.get "/api/channels.list", token: token, exclude_archived: 1)["channels"]
-    channels.find { |c| c["name"] == name }
+    response = connection.get "/api/channels.list", token: token, exclude_archived: 1
+    if response.status == 200
+      channels = JSON.parse(response.body)["channels"]
+      channels.find { |c| c["name"] == name }
+    end
   end
 
   def connection
