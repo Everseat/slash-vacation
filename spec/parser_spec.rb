@@ -18,9 +18,23 @@ RSpec.describe Parser do
       it "should be a limited list" do
         expect(subject.parse.list?).to be true
         expect(subject.parse.limited?).to be true
+        expect(subject.parse.query_by_user?).to be true
+        expect(subject.parse.query_by_channel?).to be false
       end
-      it "should retrieve the username" do
-        expect(subject.parse.username).to eq "rahearn2"
+      it "should retrieve the user" do
+        expect(subject.parse.user).to eq "rahearn2"
+      end
+    end
+    context "with search channel" do
+      let(:data) { "list #product" }
+      it "should be a limited list" do
+        expect(subject.parse.list?).to be true
+        expect(subject.parse.limited?).to be true
+        expect(subject.parse.query_by_user?).to be false
+        expect(subject.parse.query_by_channel?).to be true
+      end
+      it "should retrieve the channel" do
+        expect(subject.parse.channel).to eq "product"
       end
     end
   end

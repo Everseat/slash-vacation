@@ -70,9 +70,13 @@ post "/" do
 
   if tree.list?
     data_set = OooEntry.where { start_date >= Date.today }
-    data_set = data_set.where(slack_name: tree.username) if tree.limited?
+    data_set = data_set.where(slack_name: tree.user) if tree.query_by_user?
+    if tree.query_by_channel?
+      client = SlackClient.new AccessToken.first.access_token
+      data_set = data_set.where slack_id: client.users_in_channel(tree.channel)
+    end
     if data_set.count == 0
-      ":metal: #{tree.limited? ? tree.username : "everyone"}'s around :metal:"
+      ":metal: #{tree.limited? ? tree.query : "everyone"}'s around :metal:"
     else
       data_set.order(:start_date).map(&:to_s).join "\n"
     end

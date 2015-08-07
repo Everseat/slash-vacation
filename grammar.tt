@@ -7,10 +7,14 @@ grammar Schedule
   end
 
   rule list
-    'list' search:(' @' username:[a-z0-9]+)? {
+    'list' search:(' ' (user:('@' query:[a-z0-9]+) / channel:('#' query:[a-z0-9]+)))? {
       def list?; true; end
       def limited?; search.nonterminal?; end
-      def username; limited? && search.username.text_value; end
+      def query_by_user?; limited? && search.elements.last.respond_to?(:user); end
+      def query_by_channel?; limited? && search.elements.last.respond_to?(:channel); end
+      def user; query_by_user? && search.elements.last.user.query.text_value; end
+      def channel; query_by_channel? && search.elements.last.channel.query.text_value; end
+      def query; query_by_user? ? user : channel; end
     }
   end
 
