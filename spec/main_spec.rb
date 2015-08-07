@@ -33,20 +33,31 @@ RSpec.describe "slash-vacation" do
       it "gives a message when everyone is present" do
         OooEntry.where.delete
         post "/", token: token, text: "list"
-        expect(last_response.body).to eq ":metal: Everyone's around :metal:"
+        expect(last_response.body).to eq ":metal: everyone's around :metal:"
       end
 
-      it "should join OooEntries with new lines" do
-        OooEntry.where.delete
-        today = Date.new 2015, 8, 6
-        next_month = Date.new 2015, 9, 6
-        OooEntry.create slack_id: 'U1234', slack_name: 'rahearn', type: 'wfh', start_date: next_month, end_date: next_month, note: ''
-        OooEntry.create slack_id: 'U1234', slack_name: 'rahearn', type: 'wfh', start_date: today, end_date: today, note: 'afternoon only'
-        post "/", token: token, text: "list"
-        expect(last_response.body).to eq <<-EOM.strip
+      context "with results" do
+        before(:each) do
+          OooEntry.where.delete
+          today = Date.new 2015, 8, 6
+          next_month = Date.new 2015, 9, 6
+          OooEntry.create slack_id: 'U2345', slack_name: 'tash', type: 'wfh', start_date: next_month, end_date: next_month, note: ''
+          OooEntry.create slack_id: 'U1234', slack_name: 'rahearn', type: 'wfh', start_date: today, end_date: today, note: 'afternoon only'
+        end
+
+        it "should join OooEntries with new lines" do
+          post "/", token: token, text: "list"
+          expect(last_response.body).to eq <<-EOM.strip
 >• @rahearn is _working from home_ on *August 6, 2015* (afternoon only)
->• @rahearn is _working from home_ on *September 6, 2015*
-        EOM
+>• @tash is _working from home_ on *September 6, 2015*
+          EOM
+        end
+        it "should limit results to just the given username" do
+          post "/", token: token, text: "list @rahearn"
+          expect(last_response.body).to eq <<-EOM.strip
+>• @rahearn is _working from home_ on *August 6, 2015* (afternoon only)
+          EOM
+        end
       end
     end
     context "work from home" do

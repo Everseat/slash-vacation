@@ -11,6 +11,17 @@ RSpec.describe Parser do
     end
     it "should be a list command" do
       expect(subject.parse.list?).to be true
+      expect(subject.parse.limited?).to be false
+    end
+    context "with search user" do
+      let(:data) { "list @rahearn2" }
+      it "should be a limited list" do
+        expect(subject.parse.list?).to be true
+        expect(subject.parse.limited?).to be true
+      end
+      it "should retrieve the username" do
+        expect(subject.parse.username).to eq "rahearn2"
+      end
     end
   end
 

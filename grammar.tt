@@ -7,8 +7,10 @@ grammar Schedule
   end
 
   rule list
-    'list' {
+    'list' search:(' @' username:[a-z0-9]+)? {
       def list?; true; end
+      def limited?; search.nonterminal?; end
+      def username; limited? && search.username.text_value; end
     }
   end
 

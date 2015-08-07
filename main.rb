@@ -24,10 +24,12 @@ post "/" do
   end
 
   if tree.list?
-    # output the list of vacations
     data_set = OooEntry.where { start_date >= Date.today }
+    if tree.limited?
+      data_set = data_set.where slack_name: tree.username
+    end
     if data_set.count == 0
-      ":metal: Everyone's around :metal:"
+      ":metal: #{tree.limited? ? tree.username : 'everyone'}'s around :metal:"
     else
       data_set.order(:start_date).map(&:to_s).join "\n"
     end
@@ -41,7 +43,6 @@ post "/" do
       data_set.order(:start_date).map(&:to_s).join "\n"
     end
   else
-    # save a new record
     details = tree.details
     OooEntry.create slack_id: params[:user_id],
                     slack_name: params[:user_name],
