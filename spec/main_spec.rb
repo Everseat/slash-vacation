@@ -33,7 +33,7 @@ RSpec.describe "slash-vacation" do
       it "gives a message when everyone is present" do
         OooEntry.where.delete
         post "/", token: token, text: "list"
-        expect(last_response.body).to eq "Everyone's around :metal:"
+        expect(last_response.body).to eq ":metal: Everyone's around :metal:"
       end
 
       it "should join OooEntries with new lines" do
@@ -77,7 +77,11 @@ RSpec.describe "slash-vacation" do
       it "should respond with a success message" do
         post "/", token: token, text: 'rm out 8/6/2015', user_id: 'U1234', user_name: 'rahearn'
         expect(last_response.status).to be 200
-        expect(last_response.body).to eq ":thumbsup:"
+        expect(last_response.body).to eq ">• @rahearn is _working from home_ on *August 6, 2015*"
+      end
+      it "should give an emoji when clearing the last of your entries" do
+        post "/", token: token, text: 'rm out 8/6/2015', user_id: 'U2345', user_name: 'tash'
+        expect(last_response.body).to eq "No leave scheduled anymore. :thumbsup:"
       end
     end
   end

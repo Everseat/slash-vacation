@@ -27,16 +27,19 @@ post "/" do
     # output the list of vacations
     data_set = OooEntry.where { start_date >= Date.today }
     if data_set.count == 0
-      "Everyone's around :metal:"
+      ":metal: Everyone's around :metal:"
     else
-      data_set.order(:start_date).map do |entry|
-        entry.to_s
-      end.join "\n"
+      data_set.order(:start_date).map(&:to_s).join "\n"
     end
   elsif tree.delete?
     start_date = tree.details.date_range.first
     OooEntry.where(start_date: start_date, type: tree.type, slack_id: params[:user_id]).destroy
-    ":thumbsup:"
+    data_set = OooEntry.where { start_date >= Date.today }.where slack_id: params[:user_id]
+    if data_set.count == 0
+      "No leave scheduled anymore. :thumbsup:"
+    else
+      data_set.order(:start_date).map(&:to_s).join "\n"
+    end
   else
     # save a new record
     details = tree.details
