@@ -2,8 +2,16 @@ require "sinatra"
 require "sequel"
 require_relative "parser"
 
-TOKEN = ENV["SV_TOKEN"]
-DB = Sequel.connect ENV["DATABASE_URL"]
+configure do
+  set :slack_token, ENV["SV_TOKEN"]
+end
+configure :production, :test do
+  DB = Sequel.connect ENV["DATABASE_URL"]
+end
+configure :development do
+  connection_string = ENV["DATABASE_URL"] || "postgresql://localhost/slash-vacation_development"
+  DB = Sequel.connect connection_string
+end
 
 require_relative "models/ooo_entry"
 
@@ -12,7 +20,7 @@ get "/" do
 end
 
 post "/" do
-  if params[:token] != TOKEN
+  if params[:token] != settings.slack_token
     return [401, ""]
   end
 

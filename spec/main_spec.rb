@@ -1,6 +1,8 @@
 require_relative "spec_helper"
 
 RSpec.describe "slash-vacation" do
+  let(:date_format) { "%B %-d, %Y" }
+
   it "should respond to the root GET" do
     get "/"
     expect(last_response.body).to eq "Slack slash command vacation tracking"
@@ -37,10 +39,10 @@ RSpec.describe "slash-vacation" do
       end
 
       context "with results" do
+        let(:today) { Date.today }
+        let(:next_month) { today >> 1 }
         before(:each) do
           OooEntry.where.delete
-          today = Date.new 2015, 8, 6
-          next_month = Date.new 2015, 9, 6
           OooEntry.create slack_id: 'U2345', slack_name: 'tash', type: 'wfh', start_date: next_month, end_date: next_month, note: ''
           OooEntry.create slack_id: 'U1234', slack_name: 'rahearn', type: 'wfh', start_date: today, end_date: today, note: 'afternoon only'
         end
@@ -48,14 +50,14 @@ RSpec.describe "slash-vacation" do
         it "should join OooEntries with new lines" do
           post "/", token: token, text: "list"
           expect(last_response.body).to eq <<-EOM.strip
->• @rahearn is _working from home_ on *August 6, 2015* (afternoon only)
->• @tash is _working from home_ on *September 6, 2015*
+>• @rahearn is _working from home_ on *#{today.strftime date_format}* (afternoon only)
+>• @tash is _working from home_ on *#{next_month.strftime date_format}*
           EOM
         end
         it "should limit results to just the given username" do
           post "/", token: token, text: "list @rahearn"
           expect(last_response.body).to eq <<-EOM.strip
->• @rahearn is _working from home_ on *August 6, 2015* (afternoon only)
+>• @rahearn is _working from home_ on *#{today.strftime date_format}* (afternoon only)
           EOM
         end
       end
@@ -73,25 +75,26 @@ RSpec.describe "slash-vacation" do
       end
     end
     context "delete" do
+      let(:today) { Date.today }
+      let(:short) { today.strftime "%m/%d/%Y" }
       before(:each) do
         OooEntry.where.delete
-        today = Date.new 2015, 8, 6
         OooEntry.create slack_id: 'U1234', slack_name: 'rahearn', type: 'out', start_date: today, end_date: today, note: ''
         OooEntry.create slack_id: 'U1234', slack_name: 'rahearn', type: 'wfh', start_date: today, end_date: today, note: ''
         OooEntry.create slack_id: 'U2345', slack_name: 'tash', type: 'out', start_date: today, end_date: today, note: ''
       end
       it "should remove only my matching vacation" do
         expect {
-          post "/", token: token, text: 'rm out 8/6/2015', user_id: 'U1234', user_name: 'rahearn'
+          post "/", token: token, text: "rm out #{short}", user_id: 'U1234', user_name: 'rahearn'
         }.to change(OooEntry, :count).from(3).to 2
       end
       it "should respond with a success message" do
-        post "/", token: token, text: 'rm out 8/6/2015', user_id: 'U1234', user_name: 'rahearn'
+        post "/", token: token, text: "rm out #{short}", user_id: 'U1234', user_name: 'rahearn'
         expect(last_response.status).to be 200
-        expect(last_response.body).to eq ">• @rahearn is _working from home_ on *August 6, 2015*"
+        expect(last_response.body).to eq ">• @rahearn is _working from home_ on *#{today.strftime date_format}*"
       end
       it "should give an emoji when clearing the last of your entries" do
-        post "/", token: token, text: 'rm out 8/6/2015', user_id: 'U2345', user_name: 'tash'
+        post "/", token: token, text: "rm out #{short}", user_id: 'U2345', user_name: 'tash'
         expect(last_response.body).to eq "No leave scheduled anymore. :thumbsup:"
       end
     end
