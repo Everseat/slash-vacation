@@ -1,9 +1,9 @@
 require "sinatra"
-require 'sequel'
+require "sequel"
 require_relative "parser"
 
 TOKEN = ENV["SV_TOKEN"]
-DB = Sequel.connect ENV['DATABASE_URL']
+DB = Sequel.connect ENV["DATABASE_URL"]
 
 require_relative "models/ooo_entry"
 
@@ -25,11 +25,9 @@ post "/" do
 
   if tree.list?
     data_set = OooEntry.where { start_date >= Date.today }
-    if tree.limited?
-      data_set = data_set.where slack_name: tree.username
-    end
+    data_set = data_set.where(slack_name: tree.username) if tree.limited?
     if data_set.count == 0
-      ":metal: #{tree.limited? ? tree.username : 'everyone'}'s around :metal:"
+      ":metal: #{tree.limited? ? tree.username : "everyone"}'s around :metal:"
     else
       data_set.order(:start_date).map(&:to_s).join "\n"
     end
@@ -54,7 +52,7 @@ post "/" do
   end
 end
 
-=begin
+=begin example slash command input
 token=gIkuvaNzQIHg97ATvDxqgjtO
 team_id=T0001
 team_domain=example

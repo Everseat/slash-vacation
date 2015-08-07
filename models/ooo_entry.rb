@@ -1,7 +1,7 @@
 class OooEntry < Sequel::Model
 
   def to_s
-    type = self.type == 'wfh' ? 'working from home' : self.type
+    type = self.type == "wfh" ? "working from home" : self.type
     date_format = "%B %-d, %Y"
     dates_description = if start_date == end_date
       "on *#{start_date.strftime date_format}*"
@@ -11,4 +11,5 @@ class OooEntry < Sequel::Model
     note_formatted = note.blank? ? "" : " (#{note})"
     ">• @#{slack_name} is _#{type}_ #{dates_description}#{note_formatted}"
   end
+
 end
