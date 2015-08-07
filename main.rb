@@ -60,10 +60,21 @@ post "/" do
   if params[:token] != settings.slack_token
     return [401, ""]
   end
+  if params[:text].blank?
+    return <<-USAGE
+*USAGE*
+>• list :slack: list all future out of office plans
+>• list @username :slack: list all future out of office plans for username
+>• list #channel :slack: list all future out of office plans for users in channel
+>• wfh 8/10/2015-8/11/2015 my notes :slack: create work from home entry. End date and notes are optional
+>• out 8/10/2015-8/11/2015 my notes :slack: create vacation entry. End date and notes are optional
+>• rm wfh 8/10 :slack: delete a work from home entry starting on that date
+>• rm out 8/10 :slack: delete a vacation entry starting on that date
+    USAGE
+  end
 
-  input = params[:text].blank? ? "list" : params[:text]
   begin
-    tree = Parser.new(input).parse
+    tree = Parser.new(params[:text]).parse
   rescue ParseError => pe
     return [500, pe.message]
   end

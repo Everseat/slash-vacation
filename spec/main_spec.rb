@@ -10,6 +10,21 @@ RSpec.describe "slash-vacation" do
 
   context "POST '/'" do
     let(:token) { 'test' }
+    context "usage" do
+      it "should output usage help with no command given" do
+        post "/", token: token, text: ""
+        expect(last_response.body).to eq <<-EOM
+*USAGE*
+>• list :slack: list all future out of office plans
+>• list @username :slack: list all future out of office plans for username
+>• list #channel :slack: list all future out of office plans for users in channel
+>• wfh 8/10/2015-8/11/2015 my notes :slack: create work from home entry. End date and notes are optional
+>• out 8/10/2015-8/11/2015 my notes :slack: create vacation entry. End date and notes are optional
+>• rm wfh 8/10 :slack: delete a work from home entry starting on that date
+>• rm out 8/10 :slack: delete a vacation entry starting on that date
+        EOM
+      end
+    end
     context "list" do
       it "should check the token and reject bad requests" do
         post "/", token: 'bad', text: "list"
@@ -18,11 +33,6 @@ RSpec.describe "slash-vacation" do
 
       it "should be successful" do
         post "/", token: token, text: "list"
-        expect(last_response.status).to eq 200
-      end
-
-      it "should default to list" do
-        post "/", token: token, text: ''
         expect(last_response.status).to eq 200
       end
 
