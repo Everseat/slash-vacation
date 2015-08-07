@@ -8,6 +8,7 @@ configure do
   set :slack_client_secret, ENV["SV_CLIENT_SECRET"]
   set :slack_team_id, ENV["SV_TEAM_ID"]
   set :session_secret, ENV["SESSION_SECRET"]
+  set :method_override, true
 end
 configure :production, :test do
   DB = Sequel.connect ENV["DATABASE_URL"]
@@ -27,12 +28,55 @@ require_relative "models/slack_client"
 enable :sessions
 
 get "/" do
+  if session[:user_id]
+    redirect to('/ooo_entries')
+    return
+  end
   session[:auth_state] = SecureRandom.hex
   <<-EOM
 <p>Slack slash command vacation tracking.</p>
 <p><a href="https://slack.com/oauth/authorize?client_id=#{settings.slack_client_id}&scope=identify,read,admin&state=#{session[:auth_state]}&team=#{settings.slack_team_id}&redirect_uri=#{settings.auth_uri}">Authorize</a>
 here to manage your team</p>
   EOM
+end
+
+post "/logout" do
+  session[:user_id] = nil
+  redirect to("/"), 303
+end
+
+get "/ooo_entries" do
+  return [401, "Unauthorized"] if session[:user_id].nil?
+
+  @entries = OooEntry.where { start_date >= Date.today }.order :start_date
+  haml :'ooo_entries/index.html'
+end
+
+get "/ooo_entries/new" do
+  return [401, "Unauthorized"] if session[:user_id].nil?
+  haml :'ooo_entries/form.html'
+end
+
+post "/ooo_entries" do
+  return [401, "Unauthorized"] if session[:user_id].nil?
+
+  client = SlackClient.new
+  user = client.user params[:user_name]
+  if user
+    OooEntry.create slack_id: user["id"],
+                    slack_name: user["name"],
+                    type: params[:type],
+                    start_date: Date.parse(params[:start_date]),
+                    end_date: Date.parse(params[:end_date]),
+                    note: params[:note]
+  end
+  redirect to('/ooo_entries'), 303
+end
+
+delete "/ooo_entries/:id" do
+  return [401, "Unauthorized"] if session[:user_id].nil?
+  OooEntry.where(id: params[:id]).delete
+  redirect to('/ooo_entries'), 303
 end
 
 get "/auth" do
@@ -49,8 +93,9 @@ get "/auth" do
   if client.token
     # only keeping one access token around for now
     AccessToken.where.delete
-    AccessToken.create created_at: Time.now.utc, access_token: client.token
-    "Success"
+    token = AccessToken.create created_at: Time.now.utc, access_token: client.token
+    session[:user_id] = token.id
+    redirect to('/'), 303
   else
     [500, "Error retrieving token"]
   end
@@ -83,7 +128,7 @@ post "/" do
     data_set = OooEntry.where { start_date >= Date.today }
     data_set = data_set.where(slack_name: tree.user) if tree.query_by_user?
     if tree.query_by_channel?
-      client = SlackClient.new AccessToken.first.access_token
+      client = SlackClient.new
       data_set = data_set.where slack_id: client.users_in_channel(tree.channel)
     end
     if data_set.count == 0

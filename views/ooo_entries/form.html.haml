@@ -1,0 +1,19 @@
+%form(action="/ooo_entries" method="POST")
+  .field
+    %label(for="user_name") Slack Username
+    %input(type="text" name="user_name")
+  .field
+    %label(for="type") wfh/out
+    %input(type="text" name="type")
+  .field
+    %label(for="start_date") Start Date
+    %input(type="date" name="start_date")
+  .field
+    %label(for="end_date") End Date
+    %input(type="date" name="end_date")
+  .field
+    %label(for="note") Note
+    %input(type="text" name="note")
+  .actions
+    %button(type="submit") Save
+    %a(href="/ooo_entries") Cancel

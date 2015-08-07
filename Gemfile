@@ -5,6 +5,8 @@ ruby '2.2.2'
 gem 'sinatra', '~> 1.4'
 gem 'thin'
 
+gem 'haml', '~> 4.0'
+
 gem 'treetop', '~> 1.6'
 gem 'pg', '~> 0.18'
 gem 'sequel', '~> 4.25'

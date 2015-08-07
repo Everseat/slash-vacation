@@ -1,0 +1,31 @@
+%table(border="1")
+  %thead
+    %tr
+      %th ID
+      %th Slack ID
+      %th Slack name
+      %th Type
+      %th Start Date
+      %th End Date
+      %th Note
+      %th &nbsp;
+  %tbody
+    - @entries.each do |entry|
+      %tr
+        %td= entry.id
+        %td= entry.slack_id
+        %td= entry.slack_name
+        %td= entry.type
+        %td= entry.start_date
+        %td= entry.end_date
+        %td= entry.note
+        %td
+          %form(action="/ooo_entries/#{entry.id}" method="POST")
+            %input(type="hidden" name="_method" value="DELETE")
+            %button(type="submit") Delete
+
+%p
+  %a(href="/ooo_entries/new") Create New Entry
+%div
+  %form(action="/logout" method="POST")
+    %button(type="submit") Log out

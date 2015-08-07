@@ -5,8 +5,16 @@ class SlackClient
 
   attr_accessor :token
 
-  def initialize(token = nil)
-    @token = token
+  def initialize()
+    @token = AccessToken.first.access_token rescue nil
+  end
+
+  def user(name)
+    response = connection.get "/api/users.list", token: token
+    if response.status == 200
+      users = JSON.parse(response.body)["members"]
+      users.find { |u| u["name"] == name }
+    end
   end
 
   def users_in_channel(name)
