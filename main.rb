@@ -1,22 +1,59 @@
 require "sinatra"
 require "sequel"
-require_relative "parser"
+require "securerandom"
 
 configure do
   set :slack_token, ENV["SV_TOKEN"]
+  set :slack_client_id, ENV["SV_CLIENT_ID"]
+  set :slack_client_secret, ENV["SV_CLIENT_SECRET"]
+  set :slack_team_id, ENV["SV_TEAM_ID"]
+  set :session_secret, ENV["SESSION_SECRET"]
 end
 configure :production, :test do
   DB = Sequel.connect ENV["DATABASE_URL"]
+  set :auth_uri, ENV["SV_AUTH_URI"]
 end
 configure :development do
   connection_string = ENV["DATABASE_URL"] || "postgresql://localhost/slash-vacation_development"
   DB = Sequel.connect connection_string
+  set :auth_uri, "http://slash-vacation.dev/auth"
 end
 
+require_relative "parser"
 require_relative "models/ooo_entry"
+require_relative "models/access_token"
+require_relative "models/slack_client"
+
+enable :sessions
 
 get "/" do
-  "Slack slash command vacation tracking"
+  session[:auth_state] = SecureRandom.hex
+  <<-EOM
+<p>Slack slash command vacation tracking.</p>
+<p><a href="https://slack.com/oauth/authorize?client_id=#{settings.slack_client_id}&scope=identify,read,admin&state=#{session[:auth_state]}&team=#{settings.slack_team_id}&redirect_uri=#{settings.auth_uri}">Authorize</a>
+here to manage your team</p>
+  EOM
+end
+
+get "/auth" do
+  if session[:auth_state] != params[:state]
+    redirect to('/'), 302
+    return
+  end
+
+  client = SlackClient.new
+  client.exchange_token client_id: settings.slack_client_id,
+                        client_secret: settings.slack_client_secret,
+                        code: params[:code],
+                        redirect_uri: settings.auth_uri
+  if client.token
+    # only keeping one access token around for now
+    AccessToken.where.delete
+    AccessToken.create created_at: Time.now.utc, access_token: client.token
+    "Success"
+  else
+    [500, "Error retrieving token"]
+  end
 end
 
 post "/" do

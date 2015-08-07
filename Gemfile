@@ -8,6 +8,7 @@ gem 'thin'
 gem 'treetop', '~> 1.6'
 gem 'pg', '~> 0.18'
 gem 'sequel', '~> 4.25'
+gem 'faraday', '~> 0.9'
 
 group :development do
   gem 'heroku'

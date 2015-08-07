@@ -8,6 +8,8 @@ GEM
       unf (>= 0.0.5, < 1.0.0)
     eventmachine (1.0.7)
     excon (0.45.4)
+    faraday (0.9.1)
+      multipart-post (>= 1.2, < 3)
     foreman (0.78.0)
       thor (~> 0.19.1)
     heroku (3.40.9)
@@ -27,6 +29,7 @@ GEM
       addressable (~> 2.3)
     mime-types (2.6.1)
     multi_json (1.11.2)
+    multipart-post (2.0.0)
     net-ssh (2.9.2)
     net-ssh-gateway (1.2.0)
       net-ssh (>= 2.6.5)
@@ -77,6 +80,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  faraday (~> 0.9)
   foreman
   heroku
   pg (~> 0.18)

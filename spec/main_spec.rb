@@ -5,7 +5,7 @@ RSpec.describe "slash-vacation" do
 
   it "should respond to the root GET" do
     get "/"
-    expect(last_response.body).to eq "Slack slash command vacation tracking"
+    expect(last_response.body).to match /<p>Slack slash command vacation tracking\.<\/p>/
   end
 
   context "POST '/'" do
