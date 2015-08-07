@@ -26,7 +26,7 @@ RSpec.describe Parser do
       end
     end
     context "with search channel" do
-      let(:data) { "list #product" }
+      let(:data) { "list #dev-hack-storm" }
       it "should be a limited list" do
         expect(subject.parse.list?).to be true
         expect(subject.parse.limited?).to be true
@@ -34,7 +34,7 @@ RSpec.describe Parser do
         expect(subject.parse.query_by_channel?).to be true
       end
       it "should retrieve the channel" do
-        expect(subject.parse.channel).to eq "product"
+        expect(subject.parse.channel).to eq "dev-hack-storm"
       end
     end
   end
