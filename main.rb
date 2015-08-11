@@ -28,15 +28,20 @@ require_relative "models/slack_client"
 enable :sessions
 
 get "/" do
-  if session[:user_id]
-    redirect to('/ooo_entries')
-    return
-  end
+  redirect to('/ooo_entries') if session[:user_id]
   session[:auth_state] = SecureRandom.hex
   <<-EOM
 <p>Slack slash command vacation tracking.</p>
 <p><a href="https://slack.com/oauth/authorize?client_id=#{settings.slack_client_id}&scope=identify,read,admin&state=#{session[:auth_state]}&team=#{settings.slack_team_id}&redirect_uri=#{settings.auth_uri}">Authorize</a>
 here to manage your team</p>
+  EOM
+end
+
+get "/robots.txt" do
+  content_type :text
+  <<-EOM
+User-agent: *
+Disallow: /
   EOM
 end
 
@@ -46,7 +51,7 @@ post "/logout" do
 end
 
 get "/ooo_entries" do
-  return [401, "Unauthorized"] if session[:user_id].nil?
+  redirect to('/') if session[:user_id].nil?
 
   @entries = OooEntry.where { start_date >= Date.today }.order :start_date
   haml :'ooo_entries/index.html'
