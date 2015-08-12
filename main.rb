@@ -113,6 +113,7 @@ post "/" do
   if params[:text].blank?
     return <<-USAGE
 *USAGE*
+>• today :slack: list all of today's out of office plans
 >• list :slack: list all future out of office plans
 >• list @username :slack: list all future out of office plans for username
 >• list #channel :slack: list all future out of office plans for users in channel
@@ -129,7 +130,10 @@ post "/" do
     return [500, pe.message]
   end
 
-  if tree.list?
+  if tree.today?
+    data_set = OooEntry.where { start_date <= Date.today }.where { end_date >= Date.today }
+    data_set.order(:start_date).map(&:to_s).join "\n"
+  elsif tree.list?
     data_set = OooEntry.where { start_date >= Date.today }
     data_set = data_set.where(slack_name: tree.user) if tree.query_by_user?
     if tree.query_by_channel?

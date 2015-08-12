@@ -1,6 +1,7 @@
 grammar Schedule
   rule commands
-    (out_of_office / delete_rule / list) {
+    (out_of_office / delete_rule / list / 'today') {
+      def today?; text_value == 'today'; end
       def list?; !!(defined?(super) && super); end
       def delete?; !!(defined?(super) && super); end
     }

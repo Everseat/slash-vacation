@@ -4,10 +4,22 @@ RSpec.describe Parser do
 
   subject { described_class.new data }
 
+  context "today" do
+    let(:data) { "today" }
+    it "should return a parse tree" do
+      expect { subject.parse }.to_not raise_error
+    end
+    it "should be a today command" do
+      expect(subject.parse.today?).to be true
+    end
+  end
   context "list" do
     let(:data) { "list" }
     it "should return a parse tree" do
       expect { subject.parse }.to_not raise_error
+    end
+    it "should not be a today command" do
+      expect(subject.parse.today?).to be false
     end
     it "should be a list command" do
       expect(subject.parse.list?).to be true

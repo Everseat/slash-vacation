@@ -2,6 +2,7 @@ require_relative "spec_helper"
 
 RSpec.describe "slash-vacation" do
   let(:date_format) { "%B %-d, %Y" }
+  let(:today) { Date.today }
 
   it "should respond to the root GET" do
     get "/"
@@ -15,6 +16,7 @@ RSpec.describe "slash-vacation" do
         post "/", token: token, text: ""
         expect(last_response.body).to eq <<-EOM
 *USAGE*
+>• today :slack: list all of today's out of office plans
 >• list :slack: list all future out of office plans
 >• list @username :slack: list all future out of office plans for username
 >• list #channel :slack: list all future out of office plans for users in channel
@@ -22,6 +24,25 @@ RSpec.describe "slash-vacation" do
 >• out 8/10/2015-8/11/2015 my notes :slack: create vacation entry. End date and notes are optional
 >• rm wfh 8/10 :slack: delete a work from home entry starting on that date
 >• rm out 8/10 :slack: delete a vacation entry starting on that date
+        EOM
+      end
+    end
+    context "today" do
+      let(:tomorrow) { today + 1 }
+      let(:yesterday) { today - 1 }
+      before(:each) do
+        OooEntry.where.delete
+        OooEntry.create slack_id: 'U1234', slack_name: 'rahearn', type: 'wfh', start_date: today, end_date: today
+        OooEntry.create slack_id: 'U3456', slack_name: 'alexfu', type: 'out', start_date: yesterday, end_date: today
+        OooEntry.create slack_id: 'U4567', slack_name: 'ahacop', type: 'wfh', start_date: yesterday, end_date: tomorrow
+        OooEntry.create slack_id: 'U2345', slack_name: 'tash', type: 'out', start_date: tomorrow, end_date: tomorrow
+      end
+      it "should give today's results" do
+        post "/", token: token, text: "today"
+        expect(last_response.body).to eq <<-EOM.strip
+>• @alexfu is _out_ from *#{yesterday.strftime date_format}* to *#{today.strftime date_format}*
+>• @ahacop is _working from home_ from *#{yesterday.strftime date_format}* to *#{tomorrow.strftime date_format}*
+>• @rahearn is _working from home_ on *#{today.strftime date_format}*
         EOM
       end
     end
@@ -39,7 +60,7 @@ RSpec.describe "slash-vacation" do
       it "should give an error message when parsing fails" do
         post "/", token: token, text: 'fail'
         expect(last_response.status).to eq 500
-        expect(last_response.body).to eq "Expected one of 'wfh', 'out', 'rm', 'list' at line 1, column 1 (byte 1)"
+        expect(last_response.body).to eq "Expected one of 'wfh', 'out', 'rm', 'list', 'today' at line 1, column 1 (byte 1)"
       end
 
       it "gives a message when everyone is present" do
@@ -49,7 +70,6 @@ RSpec.describe "slash-vacation" do
       end
 
       context "with results" do
-        let(:today) { Date.today }
         let(:next_month) { today >> 1 }
         before(:each) do
           OooEntry.where.delete
@@ -85,7 +105,6 @@ RSpec.describe "slash-vacation" do
       end
     end
     context "delete" do
-      let(:today) { Date.today }
       let(:short) { today.strftime "%m/%d/%Y" }
       before(:each) do
         OooEntry.where.delete

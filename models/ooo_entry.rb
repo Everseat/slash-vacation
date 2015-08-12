@@ -8,7 +8,7 @@ class OooEntry < Sequel::Model
     else
       "from *#{start_date.strftime date_format}* to *#{end_date.strftime date_format}*"
     end
-    note_formatted = note.blank? ? "" : " (#{note})"
+    note_formatted = (note.nil? || note.blank?) ? "" : " (#{note})"
     ">• @#{slack_name} is _#{type}_ #{dates_description}#{note_formatted}"
   end
 
